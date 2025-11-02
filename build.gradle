@@ -9,6 +9,9 @@ version = '1.0-SNAPSHOT'
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 application {
@@ -34,4 +37,18 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+// Construir un JAR ejecutable con dependencias incluidas y manifest Main-Class
+tasks.named('jar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // Excluir firmas de seguridad de dependencias para evitar
+    // "Invalid signature file digest for Manifest main attributes"
+    exclude('META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+    manifest {
+        attributes('Main-Class': 'org.ej3b.Main')
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
